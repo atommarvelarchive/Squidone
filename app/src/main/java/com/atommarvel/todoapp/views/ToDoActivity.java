@@ -26,7 +26,6 @@ public class ToDoActivity extends ActionBarActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Debug.waitForDebugger();
         setContentView(R.layout.activity_to_do);
         lvItems = (ListView) findViewById(R.id.lvItems);
         etNewItem = (EditText) findViewById(R.id.etNewItem);
