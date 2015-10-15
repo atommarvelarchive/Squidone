@@ -11,6 +11,8 @@ import android.widget.EditText;
 import android.widget.ListView;
 
 import com.atommarvel.todoapp.R;
+import com.atommarvel.todoapp.controllers.ItemListController;
+import com.atommarvel.todoapp.models.Item;
 
 import org.apache.commons.io.FileUtils;
 
@@ -20,8 +22,7 @@ import java.util.ArrayList;
 
 
 public class ToDoActivity extends ActionBarActivity {
-    private ArrayList<String> todoItems;
-    private ArrayAdapter<String> aTodoItems;
+    private ItemListController todoItems;
     private ListView lvItems;
     private EditText etNewItem;
 
@@ -33,9 +34,8 @@ public class ToDoActivity extends ActionBarActivity {
         setContentView(R.layout.activity_to_do);
         lvItems = (ListView) findViewById(R.id.lvItems);
         etNewItem = (EditText) findViewById(R.id.etNewItem);
-        readItems();
-        aTodoItems = new ArrayAdapter<String>(getBaseContext(), android.R.layout.simple_list_item_1, todoItems);
-        lvItems.setAdapter(aTodoItems);
+        todoItems = new ItemListController(getBaseContext());
+        lvItems.setAdapter(todoItems.getArrayAdapter());
         setupListViewListener();
     }
 
@@ -44,33 +44,10 @@ public class ToDoActivity extends ActionBarActivity {
             @Override
             public boolean onItemLongClick(AdapterView<?> adapter, View item, int pos, long id) {
                 todoItems.remove(pos);
-                aTodoItems.notifyDataSetChanged();
-                saveItems();
                 return true;
             }
         });
     }
-
-    private void readItems() {
-        File filesDir = getFilesDir();
-        File todoFile = new File(filesDir, "todo.txt");
-        try{
-            todoItems = new ArrayList<String>(FileUtils.readLines(todoFile));
-        } catch (IOException e) {
-            todoItems = new ArrayList<String>();
-        }
-    }
-
-    private void saveItems() {
-        File filesDir = getFilesDir();
-        File todoFile = new File(filesDir, "todo.txt");
-        try{
-            FileUtils.writeLines(todoFile, todoItems);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -96,8 +73,7 @@ public class ToDoActivity extends ActionBarActivity {
 
     public void addTodoItem(View view) {
         String itemText = etNewItem.getText().toString();
-        aTodoItems.add(itemText);
+        todoItems.add(new Item(itemText));
         etNewItem.setText("");
-        saveItems();
     }
 }
