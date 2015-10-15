@@ -1,12 +1,13 @@
-package com.atommarvel.todoapp.activities;
+package com.atommarvel.todoapp.views;
 
+import android.content.Intent;
+import android.os.Debug;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
 
@@ -14,39 +15,56 @@ import com.atommarvel.todoapp.R;
 import com.atommarvel.todoapp.controllers.ItemListController;
 import com.atommarvel.todoapp.models.Item;
 
-import org.apache.commons.io.FileUtils;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-
 
 public class ToDoActivity extends ActionBarActivity {
-    private ItemListController todoItems;
+
+    private final int REQUEST_CODE = 20;
+    private ItemListController mTodoItems;
     private ListView lvItems;
     private EditText etNewItem;
-
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Debug.waitForDebugger();
         setContentView(R.layout.activity_to_do);
         lvItems = (ListView) findViewById(R.id.lvItems);
         etNewItem = (EditText) findViewById(R.id.etNewItem);
-        todoItems = new ItemListController(getBaseContext());
-        lvItems.setAdapter(todoItems.getArrayAdapter());
-        setupListViewListener();
+        mTodoItems = new ItemListController(getBaseContext());
+        lvItems.setAdapter(mTodoItems.getArrayAdapter());
+        setupListViewListeners();
     }
 
-    private void setupListViewListener() {
+    private void setupListViewListeners() {
         lvItems.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> adapter, View item, int pos, long id) {
-                todoItems.remove(pos);
+                mTodoItems.remove(pos);
                 return true;
             }
         });
+
+        lvItems.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int pos, long id) {
+                Intent i = new Intent(ToDoActivity.this, EditItemActivity.class);
+                i.putExtra("Item", mTodoItems.getItem(pos));
+                i.putExtra("pos", pos);
+                startActivityForResult(i, REQUEST_CODE);
+            }
+        });
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        // REQUEST_CODE is defined above
+        if (resultCode == RESULT_OK && requestCode == REQUEST_CODE) {
+            // Extract name value from result extras
+            Item item = (Item) data.getExtras().getSerializable("Item");
+            int pos = data.getExtras().getInt("pos");
+            mTodoItems.replaceItem(pos, item);
+
+        }
     }
 
     @Override
@@ -73,7 +91,7 @@ public class ToDoActivity extends ActionBarActivity {
 
     public void addTodoItem(View view) {
         String itemText = etNewItem.getText().toString();
-        todoItems.add(new Item(itemText));
+        mTodoItems.add(new Item(itemText));
         etNewItem.setText("");
     }
 }
